@@ -1,5 +1,6 @@
 package bupt.cs.blog.service.impl;
 
+import bupt.cs.blog.dao.dos.Archives;
 import bupt.cs.blog.dao.mapper.ArticleMapper;
 import bupt.cs.blog.dao.pojo.Article;
 import bupt.cs.blog.service.ArticleService;
@@ -66,6 +67,12 @@ public class ArticleServiceImpl implements ArticleService {
         List<Article> articles = articleMapper.selectList(queryWrapper);
 
         return Result.success(copyList(articles, false, false));
+    }
+
+    @Override
+    public Result listArchives() {
+        List<Archives> archivesList = articleMapper.listArchives();
+        return Result.success(archivesList);
     }
 
     private List<ArticleVo> copyList(List<Article> records, boolean isTag, boolean isAuthor) {
