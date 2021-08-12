@@ -2,7 +2,11 @@ package bupt.cs.blog.service.impl;
 
 import bupt.cs.blog.dao.mapper.SysUserMapper;
 import bupt.cs.blog.dao.pojo.SysUser;
+import bupt.cs.blog.service.LoginService;
 import bupt.cs.blog.service.SysUserService;
+import bupt.cs.blog.vo.ErrorCode;
+import bupt.cs.blog.vo.LoginUserVo;
+import bupt.cs.blog.vo.Result;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +15,8 @@ import org.springframework.stereotype.Service;
 public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private SysUserMapper sysUserMapper;
+    @Autowired
+    private LoginService loginService;
     @Override
     public SysUser findUserById(Long id) {
        SysUser sysUser = sysUserMapper.selectById(id);
@@ -34,5 +40,27 @@ public class SysUserServiceImpl implements SysUserService {
         return sysUser;
 
 
+    }
+
+    /**
+     * 1. token合法性校验
+     *  是否为空 解析是否成功 redis是否存在
+     * 2. 如果校验失败，返回错误
+     * 3. 如果成功，返回对应的结果 LoginUserVo
+     * @param token
+     * @return
+     */
+    @Override
+    public Result getUserInfoByToken(String token) {
+        SysUser sysUser = loginService.checkToken(token);
+        if (sysUser == null) {
+            return Result.fail(ErrorCode.TOKEN_ERROR.getCode(), ErrorCode.TOKEN_ERROR.getMsg());
+        }
+        LoginUserVo loginUserVo = new LoginUserVo();
+        loginUserVo.setAccount(sysUser.getAccount());
+        loginUserVo.setAvatar(sysUser.getAvatar());
+        loginUserVo.setId(sysUser.getId());
+        loginUserVo.setNickname(sysUser.getNickname());
+        return Result.success(loginUserVo);
     }
 }
