@@ -14,6 +14,7 @@ import bupt.cs.blog.vo.*;
 import bupt.cs.blog.vo.params.ArticleParam;
 import bupt.cs.blog.vo.params.PageParams;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -41,23 +42,63 @@ public class ArticleServiceImpl implements ArticleService {
     private SysUserService sysUserService;
     @Autowired
     private ThreadService threadService;
+
+    //因为需要用到查询year month的操作，而mybatisplus不支持此操作
     @Override
     public Result listArticle(PageParams pageParams) {
-        /**
-         * 1.分页查询article数据库表
-         */
         Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPagesize());
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-
-        //按照是否置顶和创建时间进行排序
-        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
-        Page<Article> articlePage = articleMapper.selectPage(page, queryWrapper);
-        List<Article> records = articlePage.getRecords();
-
-        //不能直接返回该record，不符合页面格式要求
-        List<ArticleVo> articleVoList = copyList(records, true, true);
-        return Result.success(articleVoList);
+        IPage<Article> articleIPage = articleMapper.listArticle(page,
+                pageParams.getCategoryId(),
+                pageParams.getTagId(),
+                pageParams.getYear(),
+                pageParams.getMonth());
+        return Result.success(copyList(articleIPage.getRecords(),true, true));
     }
+
+
+
+//    @Override
+//    public Result listArticle(PageParams pageParams) {
+//        /**
+//         * 1.分页查询article数据库表
+//         */
+//        Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPagesize());
+//        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+//
+//        if (pageParams.getCategoryId() != null){
+//            // and category_id = #{category_id}
+//            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
+//        }
+//
+//        if (pageParams.getTagId() != null) {
+//            List<Long> articleIdList = new ArrayList<>();
+//            //加入标签 条件查询
+//            //article表中并没有tag字段 一篇文章有多个标签
+//            //article_tag article_id 1 : n tag_id
+//            if (pageParams.getTagId() != null) {
+//                LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//                articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
+//                List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
+//                for (ArticleTag articleTag : articleTags) {
+//                    articleIdList.add(articleTag.getArticleId());
+//                }
+//                if (articleIdList.size() > 0){
+//                    //in [1,2,3,4]
+//                    queryWrapper.in(Article::getId, articleIdList);
+//                }
+//
+//            }
+//        }
+//
+//        //按照是否置顶和创建时间进行排序
+//        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
+//        Page<Article> articlePage = articleMapper.selectPage(page, queryWrapper);
+//        List<Article> records = articlePage.getRecords();
+//
+//        //不能直接返回该record，不符合页面格式要求
+//        List<ArticleVo> articleVoList = copyList(records, true, true);
+//        return Result.success(articleVoList);
+//    }
 
     @Override
     public Result hotArticle(int limit) {

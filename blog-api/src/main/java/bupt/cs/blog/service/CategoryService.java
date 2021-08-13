@@ -9,4 +9,10 @@ public interface CategoryService {
     //下拉所有标签
     Result findall();
 
+    //导航标签
+    Result findallDetail();
+
+    //导航标签下所有文章
+    Result findallDetailById(long id);
+
 }
