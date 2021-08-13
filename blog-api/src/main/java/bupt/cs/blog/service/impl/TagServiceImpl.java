@@ -5,6 +5,7 @@ import bupt.cs.blog.dao.pojo.Tag;
 import bupt.cs.blog.service.TagService;
 import bupt.cs.blog.vo.Result;
 import bupt.cs.blog.vo.TagVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,12 @@ public class TagServiceImpl implements TagService {
         List<Tag> tagList = tagMapper.findTagsByTagIds(tagIds);
 
         return Result.success(tagList);
+    }
+
+    @Override
+    public Result findAll() {
+        List<Tag> tags = this.tagMapper.selectList(new LambdaQueryWrapper<>());
+        return Result.success(copyList(tags));
     }
 
     public TagVo copy(Tag tag){

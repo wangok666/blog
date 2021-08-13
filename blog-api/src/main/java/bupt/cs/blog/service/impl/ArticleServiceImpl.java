@@ -3,13 +3,15 @@ package bupt.cs.blog.service.impl;
 import bupt.cs.blog.dao.dos.Archives;
 import bupt.cs.blog.dao.mapper.ArticleBodyMapper;
 import bupt.cs.blog.dao.mapper.ArticleMapper;
+import bupt.cs.blog.dao.mapper.ArticleTagMapper;
 import bupt.cs.blog.dao.pojo.Article;
 import bupt.cs.blog.dao.pojo.ArticleBody;
+import bupt.cs.blog.dao.pojo.ArticleTag;
+import bupt.cs.blog.dao.pojo.SysUser;
 import bupt.cs.blog.service.*;
-import bupt.cs.blog.vo.ArticleBodyVo;
-import bupt.cs.blog.vo.ArticleVo;
-import bupt.cs.blog.vo.CategoryVo;
-import bupt.cs.blog.vo.Result;
+import bupt.cs.blog.utils.UserThreadLocal;
+import bupt.cs.blog.vo.*;
+import bupt.cs.blog.vo.params.ArticleParam;
 import bupt.cs.blog.vo.params.PageParams;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,6 +19,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +31,8 @@ public class ArticleServiceImpl implements ArticleService {
     private ArticleMapper articleMapper;
     @Autowired
     private ArticleBodyMapper articleBodyMapper;
+    @Autowired
+    private ArticleTagMapper articleTagMapper;
     @Autowired
     private CategoryService categoryService;
     @Autowired
@@ -98,6 +103,56 @@ public class ArticleServiceImpl implements ArticleService {
         //线程池 可以把更新操作 扔到线程池中去执行，和主线程就不相关了
 
         threadService.updateArticleViewCount(articleMapper, article);
+        return Result.success(articleVo);
+    }
+
+    @Transactional
+    @Override
+    public Result publish(ArticleParam articleParam) {
+        /**
+         * 1. 发布文章 目的 构建Article对象
+         * 2. 作者id 当前的登录用户
+         * 3. 标签 要将标签加入到 关联列表当中
+         * 4. body内容存储
+         */
+        SysUser sysUser = UserThreadLocal.get();
+
+        Article article = new Article();
+        article.setAuthorId(sysUser.getId());
+        article.setCategoryId(articleParam.getCategory().getId());
+        article.setCreateDate(System.currentTimeMillis());
+        article.setCommentCounts(0);
+        article.setSummary(articleParam.getSummary());
+        article.setTitle(articleParam.getTitle());
+        article.setViewCounts(0);
+        article.setWeight(Article.Article_Common);
+        article.setBodyId(-1L);
+        articleMapper.insert(article);
+
+        //tag
+        List<TagVo> tags = articleParam.getTags();
+        if (tags != null){
+
+            for (TagVo tag : tags) {
+                ArticleTag articleTag = new ArticleTag();
+                articleTag.setArticleId(article.getId());
+                articleTag.setTagId(tag.getId());
+                articleTagMapper.insert(articleTag);
+            }
+        }
+
+        //body
+        ArticleBody articleBody = new ArticleBody();
+        articleBody.setContent(articleParam.getBody().getContent());
+        articleBody.setContentHtml(articleParam.getBody().getContentHtml());
+        articleBody.setArticleId(article.getId());
+        articleBodyMapper.insert(articleBody);
+        article.setBodyId(articleBody.getId());
+
+        articleMapper.updateById(article);
+
+        ArticleVo articleVo = new ArticleVo();
+        articleVo.setId(article.getId());
         return Result.success(articleVo);
     }
 

@@ -2,6 +2,7 @@ package bupt.cs.blog.controller;
 
 import bupt.cs.blog.vo.ArticleVo;
 import bupt.cs.blog.vo.Result;
+import bupt.cs.blog.vo.params.ArticleParam;
 import bupt.cs.blog.vo.params.PageParams;
 import bupt.cs.blog.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,4 +47,11 @@ public class ArticleController {
     public Result findArticleById(@PathVariable("id") Long id) {
         return articleService.findArticleById(id);
     }
+
+    //文章发布页
+    @PostMapping("publish")
+    public Result publish(@RequestBody ArticleParam articleParam) {
+        return articleService.publish(articleParam);
+    }
+
 }

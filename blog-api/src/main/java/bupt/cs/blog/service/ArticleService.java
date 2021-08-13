@@ -2,6 +2,7 @@ package bupt.cs.blog.service;
 
 import bupt.cs.blog.vo.ArticleVo;
 import bupt.cs.blog.vo.Result;
+import bupt.cs.blog.vo.params.ArticleParam;
 import bupt.cs.blog.vo.params.PageParams;
 
 public interface ArticleService {
@@ -20,4 +21,7 @@ public interface ArticleService {
 
     //查询文章详情
     Result findArticleById(Long id);
+
+    //发布文章
+    Result publish(ArticleParam articleParam);
 }
