@@ -2,6 +2,7 @@ package bupt.cs.blog.handler;
 
 import bupt.cs.blog.dao.pojo.SysUser;
 import bupt.cs.blog.service.LoginService;
+import bupt.cs.blog.utils.UserThreadLocal;
 import bupt.cs.blog.vo.ErrorCode;
 import bupt.cs.blog.vo.Result;
 import com.alibaba.fastjson.JSON;
@@ -55,6 +56,14 @@ public class LoginInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        //在controller中，直接获取用户的信息
+        UserThreadLocal.put(sysUser);
         return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        //如果不删除ThreadLocal中用完的信息 会有内存泄漏的风险
+        UserThreadLocal.remove();
     }
 }
