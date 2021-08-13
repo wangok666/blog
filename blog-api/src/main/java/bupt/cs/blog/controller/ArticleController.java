@@ -1,5 +1,6 @@
 package bupt.cs.blog.controller;
 
+import bupt.cs.blog.common.aop.LogAnnotation;
 import bupt.cs.blog.vo.ArticleVo;
 import bupt.cs.blog.vo.Result;
 import bupt.cs.blog.vo.params.ArticleParam;
@@ -16,8 +17,11 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
+
     //首页文章列表
     @PostMapping
+    //加上此注解，代表要对此接口记录日志
+    @LogAnnotation(module="文章", operator="获取文章列表")
     public Result listArticle(@RequestBody PageParams pageParams){
         return articleService.listArticle(pageParams);
     }
