@@ -37,7 +37,6 @@ public class TagServiceImpl implements TagService {
          * 1. 标签所拥有的文章数量数量最多 最热标签
          * 2. 查询 根据tag_id分组 计数，从大到小 排列 取前limit个标签
          */
-        System.out.println("这里可以执行");
         List<Long> tagIds = tagMapper.findHotsTagIds(limit);
 
         if (CollectionUtils.isEmpty(tagIds)) {
@@ -74,6 +73,7 @@ public class TagServiceImpl implements TagService {
     public TagVo copy(Tag tag){
         TagVo tagVo = new TagVo();
         BeanUtils.copyProperties(tag,tagVo);
+        tagVo.setId(String.valueOf(tag.getId()));
         return tagVo;
     }
     public List<TagVo> copyList(List<Tag> tagList){

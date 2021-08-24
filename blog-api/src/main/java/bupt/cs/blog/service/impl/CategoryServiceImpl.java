@@ -24,7 +24,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryMapper.selectById(categoryId);
         CategoryVo categoryVo = new CategoryVo();
         categoryVo.setCategoryName(category.getCategoryName());
-        categoryVo.setId(category.getId());
+        categoryVo.setId(String.valueOf(category.getId()));
         categoryVo.setAvatar(category.getAvatar());
         return categoryVo;
     }
@@ -54,6 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryVo copy(Category category){
         CategoryVo categoryVo = new CategoryVo();
         BeanUtils.copyProperties(category,categoryVo);
+        categoryVo.setId(String.valueOf(category.getId()));
         return categoryVo;
     }
 
